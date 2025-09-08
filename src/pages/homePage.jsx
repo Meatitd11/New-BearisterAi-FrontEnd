@@ -12,7 +12,7 @@ import TestDriveSection from '../LandingComponents/TestDriveSection'
 import TestimonialsSection from '../LandingComponents/TestimonialsSection'
 import ToolsSection from '../LandingComponents/ToolsSection'
 
-const Home = () => {
+const HomePage = () => {
   return (
    <>
    <div className=" bg-black text-white ">
@@ -35,4 +35,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default HomePage

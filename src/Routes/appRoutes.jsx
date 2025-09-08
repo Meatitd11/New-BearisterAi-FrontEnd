@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "../pages/home";
+import HomePage from '../pages/homePage';
 import SignIn from '../userAuth/signIn';
 import Signup from '../userAuth/signup';
 import ResetPassword from '../userAuth/resetPassword';
@@ -26,7 +26,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Public routes accessible to all */}
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<HomePage/>} />
       
       {/* Guest routes - only accessible when not authenticated */}
       <Route 
