@@ -15,10 +15,12 @@ const ResetPassword = () => {
     e.preventDefault()
     try {
       await resetPassword(password, confirmPassword)
+      navigate("/reset-success")   // ✅ redirect after success
     } catch (err) {
       console.error("Failed to reset password:", err)
     }
   }
+  
 
   // Check if token is present
   const token = searchParams.get("token")

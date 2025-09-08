@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from '../pages/home';
+import Home from "../pages/home";
 import SignIn from '../userAuth/signIn';
 import Signup from '../userAuth/signup';
 import ResetPassword from '../userAuth/resetPassword';
@@ -20,6 +20,7 @@ import PaymentSuccess from '../userDashboard/PaymentSuccess';
 import PaymentCancel from '../userDashboard/PaymentCancel';
 import ProtectedRoute from './protectedRoutes';
 import GuestRoute from './guestRoute';
+import ResetSuccess from '../userAuth/resetSuccess';
 
 const AppRoutes = () => {
   return (
@@ -66,6 +67,14 @@ const AppRoutes = () => {
         element={
           <GuestRoute>
             <ResetPassword />
+          </GuestRoute>
+        } 
+      />
+         <Route 
+        path="/reset-success" 
+        element={
+          <GuestRoute>
+            <ResetSuccess/>
           </GuestRoute>
         } 
       />
