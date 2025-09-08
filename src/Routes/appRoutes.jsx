@@ -174,7 +174,7 @@ const AppRoutes = () => {
       {/* Add more admin routes as needed */}
       
       {/* Catch all route - redirect to home */}
-      <Route path="*" element={<Home />} />
+      <Route path="*" element={<HomePage />} />
     </Routes>
   );
 }
