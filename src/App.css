@@ -1,0 +1,99 @@
+@import "tailwindcss";
+@import "./index.css";
+
+
+#root {
+  width: 100%;
+  margin: 0 auto;
+  overflow-x: hidden;
+
+}
+
+
+html,
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  color-scheme: dark;
+  font-family: var(--font-family);
+}
+
+
+.sidebar-scroll::-webkit-scrollbar { width: 0; height: 0; }
+.sidebar-scroll { scrollbar-width: none; }
+
+
+.admin-auth { color-scheme: light; }
+.admin-auth {
+
+  --background: #f8fafc;
+  --foreground: #0f1724;
+  --card: #ffffff;
+  --card-foreground: #0f1724;
+  --popover: #ffffff;
+  --popover-foreground: #0f1724;
+  --primary: #0ea5a4;
+  --primary-foreground: #0f1724;
+  --secondary: #64748b;
+  --secondary-foreground: #f8fafc;
+  --muted: #94a3b8;
+  --muted-foreground: #475569;
+  --accent: #7c3aed;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(15,23,36,0.06);
+  --input: rgba(15,23,36,0.04);
+  --ring: rgba(99,102,241,0.12);
+  --sidebar: #f1f5f9;
+  --sidebar-foreground: #0f1724;
+  --sidebar-primary: #0ea5a4;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #7c3aed;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(15,23,36,0.06);
+  --sidebar-ring: rgba(99,102,241,0.12);
+}
+.admin-auth input,
+.admin-auth textarea,
+.admin-auth select { background-color: #ffffff !important; border-color: #e5e7eb !important; color: #111827; }
+.admin-auth input::placeholder,
+.admin-auth textarea::placeholder { color: #9ca3af; }
+/* Chat interface (reuse user DOM, just recolor) */
+.admin-auth form.rounded-\[22px\] .relative.rounded-\[18px\] {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02) !important;
+}
+.admin-auth textarea {
+  color: #111827 !important;
+}
+.admin-auth button[aria-label="add link"] {
+  background-color: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
+}
+.admin-auth .text-white { color: #111827 !important; }
+/* Tame Chrome autofill gray/yellow backgrounds */
+.admin-auth input:-webkit-autofill,
+.admin-auth textarea:-webkit-autofill,
+.admin-auth select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #111827 !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+
+
+
+
+/* Works for Chrome, Safari, Edge */
+.chat-interface ::-webkit-scrollbar {
+  display: none;
+}
+
+/* Works for Firefox */
+.chat-interface {
+  scrollbar-width: none;   /* hides scrollbar */
+  -ms-overflow-style: none; /* for old IE/Edge */
+}

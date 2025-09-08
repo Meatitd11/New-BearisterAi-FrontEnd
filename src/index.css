@@ -1,0 +1,164 @@
+/* Design System Variables */
+:root {
+  /* Legacy palette used by some components */
+  --color-bg: #181a20;
+  --color-sidebar: #23262f;
+  --color-card: #23262f;
+  --color-accent: #4f8bff;
+  --color-pink: #ff4f8b;
+  --color-orange: #ffb86c;
+  --color-muted: #a1a1aa;
+  --color-white: #ffffff;
+  --color-shadow: rgba(0, 0, 0, 0.08);
+
+  /* Typography */
+  --font-family: "Manrope", system-ui, sans-serif;
+  --font-size-base: 14px;
+  --font-size-lg: 1.75rem;
+  --font-size-md: 1rem;
+  --font-size-sm: 0.9rem;
+  --font-weight-bold: 700;
+  --font-weight-medium: 500;
+  --line-height-base: 1.6;
+
+  /* Radius */
+  --radius-sidebar: 18px;
+  --radius-input: 18px;
+  --radius-card: 18px;
+  --radius-pill: 24px;
+  --radius-scrollbar: 8px;
+
+  /* Spacing */
+  --sidebar-width: 260px;
+  --container-padding: 24px;
+  --hero-margin-top: 48px;
+  --input-height: 56px;
+  --card-width: 180px;
+  --card-height: 140px;
+  --card-gap: 12px;
+
+  /* Shadow */
+  --card-shadow: 0 4px 24px var(--color-shadow);
+
+  /* Next-style logical tokens (light defaults) */
+  --background: #f8fafc;
+  --foreground: #0f1724;
+  --card: #ffffff;
+  --card-foreground: #0f1724;
+  --popover: #ffffff;
+  --popover-foreground: #0f1724;
+  --primary: #0ea5a4;
+  --primary-foreground: #0f1724;
+  --secondary: #64748b;
+  --secondary-foreground: #f8fafc;
+  --muted: #94a3b8;
+  --muted-foreground: #475569;
+  --accent: #7c3aed;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(15, 23, 36, 0.06);
+  --input: rgba(15, 23, 36, 0.04);
+  --ring: rgba(99, 102, 241, 0.12);
+  --chart-1: #14b8a6;
+  --chart-2: #60a5fa;
+  --chart-3: #7c3aed;
+  --chart-4: #f59e0b;
+  --chart-5: #ec4899;
+  --radius: 0.625rem;
+  --sidebar: #f1f5f9;
+  --sidebar-foreground: #0f1724;
+  --sidebar-primary: #0ea5a4;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #7c3aed;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(15, 23, 36, 0.06);
+  --sidebar-ring: rgba(99, 102, 241, 0.12);
+  --brand-gradient: linear-gradient(
+    135deg,
+    #7c3aed 0%,
+    #db2777 55%,
+    #f97316 100%
+  );
+}
+
+/* Dark theme override to match Next.js app */
+.dark {
+  --background: #121926;
+  --foreground: #e6eef6;
+  --card: #0d151f;
+  --card-foreground: #e6eef6;
+  --popover: #0b1220;
+  --popover-foreground: #e6eef6;
+  --primary: #14b8a6;
+  --primary-foreground: #071025;
+  --secondary: #334155;
+  --secondary-foreground: #e6eef6;
+  --muted: #263144;
+  --muted-foreground: #9aa6b2;
+  --accent: #7c3aed;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.06);
+  --input: rgba(255, 255, 255, 0.04);
+  --ring: rgba(124, 58, 237, 0.14);
+  --chart-1: #14b8a6;
+  --chart-2: #60a5fa;
+  --chart-3: #7c3aed;
+  --chart-4: #f59e0b;
+  --chart-5: #ec4899;
+  --sidebar: #0c131f;
+  --sidebar-foreground: #cfe8f3;
+  --sidebar-primary: #14b8a6;
+  --sidebar-primary-foreground: #071025;
+  --sidebar-accent: #7c3aed;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.04);
+  --sidebar-ring: rgba(20, 184, 166, 0.12);
+  --brand-gradient: linear-gradient(
+    135deg,
+    #6d28d9 0%,
+    #c026d3 50%,
+    #fb923c 100%
+  );
+}
+
+@media (max-width: 900px) {
+  :root {
+    --sidebar-width: 0px;
+    --container-padding: 16px;
+  }
+}
+
+/* Hide scrollbar for webkit browsers */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Success Toast with gradient */
+.Toastify__toast--success {
+  background: #121926 !important;
+  color: #fff !important;
+  font-weight: 500;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Error Toast with gradient */
+.Toastify__toast--error {
+  background: #121926 !important;
+  color: #fff !important;
+  font-weight: 500;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.Toastify__close-button > svg {
+  fill: white !important;
+}
