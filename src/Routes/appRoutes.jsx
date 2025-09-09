@@ -96,6 +96,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+        <Route 
+        path="/chat/:sessionId" 
+        element={
+          <ProtectedRoute>
+            <UserDashboard />
+          </ProtectedRoute>
+        }
+      />
       <Route 
         path="/profile-settings" 
         element={

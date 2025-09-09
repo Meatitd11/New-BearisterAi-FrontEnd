@@ -1,27 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Copy, ThumbsDown, ThumbsUp, RefreshCw,Share } from 'lucide-react';
+import { Copy, ThumbsDown, ThumbsUp, RefreshCw, Share } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axiosAuth from '../utils/axiosAuth';
+import useSession from '../hooks/useSession';
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [hasStartedChat, setHasStartedChat] = useState(false);
-  const [showPrompts, setShowPrompts] = useState(false);
-  const [filteredPrompts, setFilteredPrompts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [tempSessionId, setTempSessionId] = useState(null);
   const messagesEndRef = useRef(null);
-
-  // Dummy prompts data
-  const dummyPrompts = [
-    "What are the elements of a breach of contract claim?",
-    "How do I draft a motion to dismiss?",
-    "What's the statute of limitations for personal injury in California?",
-    "Can you help me analyze this police report?",
-    "What jury instructions are appropriate for a negligence case?",
-    "How to respond to a request for production of documents?",
-    "What are the requirements for a valid will?",
-    "Explain the difference between murder and manslaughter",
-    "How to calculate damages in a breach of contract case?",
-    "What are the elements of negligence?"
-  ];
+  const { sessionId } = useParams();
+  const navigate = useNavigate();
+  const { createSession } = useSession();
 
   const actionButtons = [
     {
@@ -58,102 +50,150 @@ const ChatInterface = () => {
     },
   ];
 
-  // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Filter prompts based on input
-  useEffect(() => {
-    if (input.length > 1) {
-      const filtered = dummyPrompts.filter(prompt => 
-        prompt.toLowerCase().includes(input.toLowerCase())
-      );
-      setFilteredPrompts(filtered);
-      setShowPrompts(true);
-    } else {
-      setShowPrompts(false);
+  // Function to create a session automatically
+  const createAutoSession = async () => {
+    try {
+      const sessionData = await createSession("New Chat");
+      setTempSessionId(sessionData.session_id);
+      return sessionData.session_id;
+    } catch (error) {
+      console.error("Failed to create session:", error);
+      throw error;
     }
-  }, [input]);
+  };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
-    // Mark that chat has started
+    // If no session ID exists, create one automatically
+    let currentSessionId = sessionId;
+    if (!currentSessionId && !tempSessionId) {
+      try {
+        currentSessionId = await createAutoSession();
+      } catch (error) {
+        // If session creation fails, show error and return
+        const errorMessage = error.response?.data?.detail || "Sorry, I couldn't create a chat session. Please try again.";
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            text: errorMessage,
+          },
+        ]);
+        setIsLoading(false);
+        return;
+      }
+    }
+
     if (!hasStartedChat) {
       setHasStartedChat(true);
     }
 
-    // Add user message
     const newMessages = [...messages, { role: "user", text: input }];
     setMessages(newMessages);
-    setShowPrompts(false);
+    setIsLoading(true);
 
-    // Dummy assistant reply
-    setTimeout(() => {
+    try {
+      const formData = new FormData();
+      formData.append('session_id', currentSessionId || tempSessionId);
+      formData.append('question', input);
+
+      const { data } = await axiosAuth.post('/chatbot/ask', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          text: "I've analyzed your query about legal matters. Based on my database of case law and statutes, I can provide you with relevant information and citations. Would you like me to draft a document or provide more specific details?",
+          text: data.response || "I've analyzed your query about legal matters. Based on my database of case law and statutes, I can provide you with relevant information and citations. Would you like me to draft a document or provide more specific details?",
         },
       ]);
-    }, 700);
 
-    setInput("");
+      // If we created a temporary session and it's successful, redirect to the proper URL
+      if (tempSessionId && !sessionId) {
+        navigate(`/chat/${tempSessionId}`, { replace: true });
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      
+      // Show proper error message from server response or generic error
+      const errorMessage = error.response?.data?.detail || 
+                          error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          "Sorry, I encountered a server error. Please try again.";
+      
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text: errorMessage,
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+      setInput("");
+    }
   };
 
-  const handleActionButtonClick = (title) => {
+  const handleActionButtonClick = async (title) => {
     setInput(title);
-    setShowPrompts(false);
-  };
-
-  const handlePromptClick = (prompt) => {
-    setInput(prompt);
-    setShowPrompts(false);
+    
+    // If no session exists, create one automatically when clicking action buttons
+    if (!sessionId && !tempSessionId) {
+      try {
+        await createAutoSession();
+      } catch (error) {
+        console.error("Failed to create session:", error);
+      }
+    }
   };
 
   return (
-    <div className="w-full  mx-auto h-[75vh] flex flex-col bg-[#121926] chat-interface">
-      {/* Chat messages container - takes full height when chat has started */}
+    <div className="w-full mx-auto h-[75vh] flex flex-col bg-[#121926] chat-interface">
       {hasStartedChat && (
-  <div className="flex-1 overflow-y-auto p-4">
-    <div className="space-y-4">
-      {messages.map((msg, idx) => (
-        <div key={idx}>
-          <div
-            className={`max-w-[80%] text-sm whitespace-pre-line ${
-              msg.role === "user"
-                ? "ml-auto bg-[#0C131F] p-4 rounded-2xl text-white"
-                : "mr-auto bg-transparent mt-5 text-gray-200 border-b border-[#E3E5EB] pb-5"
-            }`}
-          >
-            {msg.text}
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="space-y-4">
+            {messages.map((msg, idx) => (
+              <div key={idx}>
+                <div
+                  className={`max-w-[80%] text-sm whitespace-pre-line ${
+                    msg.role === "user"
+                      ? "ml-auto bg-[#0C131F] p-4 rounded-2xl text-white"
+                      : "mr-auto bg-transparent mt-5 text-gray-200 border-b border-[#E3E5EB] pb-5"
+                  }`}
+                >
+                  {msg.text}
+                </div>
+
+                {msg.role !== "user" && (
+                  <div className="flex items-center gap-4 mt-2 ml-2 text-white ">
+                    <ThumbsUp className="hover:text-[#F1750F] transition-colors w-[13px]"/>
+                    <ThumbsDown className="hover:text-[#F1750F] transition-colors w-[13px]"/>              
+                    <RefreshCw className="hover:text-[#F1750F] transition-colors w-[13px]"/>
+                    <Copy className="hover:text-[#F1750F] transition-colors w-[13px]"/>
+                    <Share className="hover:text-[#F1750F] transition-colors w-[13px]"/>
+                  </div>
+                )}
+              </div>
+            ))}
+            {isLoading && (
+              <div className="mr-auto bg-transparent mt-5 text-gray-200 border-b border-[#E3E5EB] pb-5">
+                Thinking...
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
-
-          {/* icons only for bot */}
-          {msg.role !== "user" && (
-            <div className="flex items-center gap-4 mt-2 ml-2 text-white ">
-        
-              < ThumbsUp   className="hover:text-[#F1750F] transition-colors w-[13px]"/>
-              < ThumbsDown   className="hover:text-[#F1750F] transition-colors w-[13px]"/>              
-              < RefreshCw   className="hover:text-[#F1750F] transition-colors w-[13px]"/>
-              <Copy   className="hover:text-[#F1750F] transition-colors w-[13px]"/>
-              <Share   className="hover:text-[#F1750F] transition-colors w-[13px]"/>
-            
-            </div>
-          )}
         </div>
-      ))}
-      <div ref={messagesEndRef} />
-    </div>
-  </div>
-)}
+      )}
 
-
-
-      {/* Main content container - your original design */}
       <div className={`${hasStartedChat ? 'hidden' : 'flex-1 flex flex-col justify-center'}`}>
         <div className="text-center mb-8 px-4">
           <h1 className="text-2xl sm:text-3xl font-semibold mb-3 text-[#e3e8ef]">Hey there, Welcome to BearisterAI</h1>
@@ -163,61 +203,57 @@ const ChatInterface = () => {
           </p>
         </div>
 
-        {/* Your original form - unchanged */}
         <div className="px-4 max-w-[740px] mx-auto">
-        <form onSubmit={handleSubmit} className="rounded-[22px]" style={{ backgroundColor: 'transparent' }}>
-  <div className="flex items-center gap-3">
-    <div className="relative flex-1">
-      {/* inner input container (lighter card) */}
-      <div
-        className="relative rounded-[18px] px-4 pt-7 pb-5"
-        style={{
-          backgroundColor: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)',
-        }}
-      >
-        {/* link button inside input (left) */}
-        <button
-          type="button"
-          className="absolute left-4 bottom-2 w-9 h-9 flex items-center justify-center rounded-full text-gray-300/90 hover:text-white transition-colors"
-          aria-label="add link"
-          style={{ backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
-        >
-          <span>🔗</span>
-        </button>
+          <form onSubmit={handleSubmit} className="rounded-[22px]" style={{ backgroundColor: 'transparent' }}>
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1">
+                <div
+                  className="relative rounded-[18px] px-4 pt-7 pb-5"
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)',
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="absolute left-4 bottom-2 w-9 h-9 flex items-center justify-center rounded-full text-gray-300/90 hover:text-white transition-colors"
+                    aria-label="add link"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
+                  >
+                    <span>🔗</span>
+                  </button>
 
-        <textarea
-          rows={1}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="✨ Ask Anything..."
-          className="w-full  text-[13px] text-white focus:outline-none focus:ring-0 resize-none overflow-hidden min-h-[72px] max-h-[160px] font-medium bg-transparent pb-7 placeholder:text-[#FCFCFD] placeholder:font-medium"
-          style={{
-            height: 'auto',
-          }}
-        />
+                  <textarea
+                    rows={1}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="✨ Ask Anything..."
+                    className="w-full text-[13px] text-white focus:outline-none focus:ring-0 resize-none overflow-hidden min-h-[72px] max-h-[160px] font-medium bg-transparent pb-7 placeholder:text-[#FCFCFD] placeholder:font-medium"
+                    style={{
+                      height: 'auto',
+                    }}
+                  />
 
-        {/* send button inside inner field (right) */}
-        <button
-          type="submit"
-          className="absolute right-3 bottom-2 w-10 h-10 flex items-center justify-center rounded-full focus:outline-none focus:ring-0 shadow-[0_6px_18px_rgba(251,146,60,0.25)] transition-transform duration-150 hover:scale-105 cursor-pointer"
-          aria-label="send"
-          style={{
-            background: 'radial-gradient(86% 93.75% at 50% 100%, #FFAE47 0%, #C7497D 58.08%, #7527AA 100%)',
-            color: 'white',
-          }}
-        >
-          <span>➤</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</form>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="absolute right-3 bottom-2 w-10 h-10 flex items-center justify-center rounded-full focus:outline-none focus:ring-0 shadow-[0_6px_18px_rgba(251,146,60,0.25)] transition-transform duration-150 hover:scale-105 cursor-pointer"
+                    aria-label="send"
+                    style={{
+                      background: 'radial-gradient(86% 93.75% at 50% 100%, #FFAE47 0%, #C7497D 58.08%, #7527AA 100%)',
+                      color: 'white',
+                      opacity: isLoading ? 0.7 : 1
+                    }}
+                  >
+                    <span>➤</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
 
-
-          {/* Your original action buttons - unchanged */}
-          <div className="w-full  mx-auto grid grid-cols-2 md:grid-cols-4 gap-2 mt-4">
+          <div className="w-full mx-auto grid grid-cols-2 md:grid-cols-4 gap-2 mt-4">
             {actionButtons.map((button, index) => (
               <button
                 key={index}
@@ -236,19 +272,16 @@ const ChatInterface = () => {
         </div>
       </div>
 
-      {/* Fixed input at bottom for when chat has started */}
       {hasStartedChat && (
-        <div className="sticky bottom-0 w-full  ">
+        <div className="sticky bottom-0 w-full">
           <form onSubmit={handleSubmit} className="rounded-[22px]" style={{ backgroundColor: 'transparent' }}>
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
-                {/* inner input container (lighter card) */}
                 <div className="relative rounded-[18px] px-4 pt-7 pb-5" style={{ 
                   backgroundColor: 'rgba(255,255,255,0.05)', 
                   border: '1px solid rgba(255,255,255,0.08)', 
                   boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)'
                 }}>
-                  {/* link button inside input (left) */}
                   <button
                     type="button"
                     className="absolute left-4 bottom-2 w-9 h-9 flex items-center justify-center rounded-full text-gray-300/90 hover:text-white transition-colors"
@@ -262,23 +295,23 @@ const ChatInterface = () => {
                     rows={1}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    className="w-full  text-[13px] text-white focus:outline-none focus:ring-0 resize-none overflow-hidden min-h-[72px] max-h-[160px] font-medium bg-transparent pb-7"
+                    className="w-full text-[13px] text-white focus:outline-none focus:ring-0 resize-none overflow-hidden min-h-[72px] max-h-[160px] font-medium bg-transparent pb-7"
                     style={{
                       height: 'auto',
                     }}
-                     placeholder="✨ Ask Anything..."
+                    placeholder="✨ Ask Anything..."
+                    disabled={isLoading}
                   />
 
-                
-
-                  {/* send button inside inner field (right) */}
                   <button
                     type="submit"
+                    disabled={isLoading}
                     className="absolute right-3 bottom-2 w-10 h-10 flex items-center justify-center rounded-full focus:outline-none focus:ring-0 shadow-[0_6px_18px_rgba(251,146,60,0.25)] transition-transform duration-150 hover:scale-105 cursor-pointer"
                     aria-label="send"
                     style={{ 
                       background: 'radial-gradient(86% 93.75% at 50% 100%, #FFAE47 0%, #C7497D 58.08%, #7527AA 100%)',
-                      color: 'white'
+                      color: 'white',
+                      opacity: isLoading ? 0.7 : 1
                     }}
                   >
                     <span className="">➤</span>

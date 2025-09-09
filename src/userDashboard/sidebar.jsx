@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Logo from '../assets/images/logo.png'
 import useAuth from '../hooks/useAuth';
+import useSession from '../hooks/useSession';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { 
   FileText, Users, Scale, BookOpen, Shield, Plus, Search, 
-  ChevronDown, LogOut, User, Menu 
+  ChevronDown, LogOut, User, Menu, X 
 } from 'lucide-react';
 
 const Sidebar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { user, logout, isAuthenticated } = useAuth(); // Get user and auth status from useAuth hook
+  const [showSessionNameInput, setShowSessionNameInput] = useState(false);
+  const [sessionName, setSessionName] = useState("New Chat");
+  const { user, logout, isAuthenticated } = useAuth();
+  const { loading, createSession } = useSession();
   const navigate = useNavigate();
 
   const menuItems = [
@@ -42,6 +46,24 @@ const Sidebar = () => {
     navigate("/login");
   };
 
+  const handleNewChat = async () => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const sessionData = await createSession(sessionName);
+      // Redirect to chat screen with the session ID
+      navigate(`/chat/${sessionData.session_id}`);
+      window.location.reload();      
+      setShowSessionNameInput(false);
+      setSessionName("New Chat");
+    } catch (error) {
+      console.error("Failed to create session:", error);
+    }
+  };
+
   return (
     <aside className="w-[280px] flex flex-col min-h-screen" style={{ 
       backgroundColor: '#1a2232', 
@@ -63,13 +85,62 @@ const Sidebar = () => {
       <div className="flex-1 overflow-y-auto sidebar-scroll">
         {/* New Chat Button */}
         <div className="px-3 pt-4">
-          <button className="w-full flex items-center space-x-2 px-3 py-2 rounded-md transition-colors text-sm font-medium" style={{ 
-            background: 'transparent', 
-            color: '#db610a' 
-          }}>
-            <Plus className="w-3.5 h-3.5" style={{ color: '#db610a'}} />
-            <span>New Chat</span>
-          </button>
+          {showSessionNameInput ? (
+            <div className="mb-2">
+              <input
+                type="text"
+                value={sessionName}
+                onChange={(e) => setSessionName(e.target.value)}
+                className="w-full px-3 py-2 rounded-md text-sm mb-2"
+                style={{ 
+                  backgroundColor: '#121926', 
+                  border: '1px solid #2d3748', 
+                  color: '#e3e8ef'
+                }}
+                placeholder="Session name"
+                autoFocus
+              />
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleNewChat}
+                  disabled={loading}
+                  className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-md transition-colors text-sm font-medium"
+                  style={{ 
+                    background: '#db610a', 
+                    color: 'white',
+                    opacity: loading ? 0.7 : 1
+                  }}
+                >
+                  {loading ? 'Creating...' : 'Create'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSessionNameInput(false);
+                    setSessionName("New Chat");
+                  }}
+                  className="p-2 rounded-md transition-colors"
+                  style={{ 
+                    background: '#2d3748', 
+                    color: '#e3e8ef'
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setShowSessionNameInput(true)}
+              className="w-full flex items-center space-x-2 px-3 py-2 rounded-md transition-colors text-sm font-medium" 
+              style={{ 
+                background: 'transparent', 
+                color: '#db610a' 
+              }}
+            >
+              <Plus className="w-3.5 h-3.5" style={{ color: '#db610a'}} />
+              <span>New Chat</span>
+            </button>
+          )}
         </div>
 
         {/* Search */}
