@@ -21,6 +21,7 @@ import PaymentCancel from '../userDashboard/PaymentCancel';
 import ProtectedRoute from './protectedRoutes';
 import GuestRoute from './guestRoute';
 import ResetSuccess from '../userAuth/resetSuccess';
+import SubscriptionLimits from '../userDashboard/subscriptionLimits';
 
 const AppRoutes = () => {
   return (
@@ -120,11 +121,19 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-        <Route 
-        path="/subscription" 
+         <Route 
+        path="/pricing-plans" 
         element={
           <ProtectedRoute>
             <SubscriptionPage />
+          </ProtectedRoute>
+        }
+      />
+         <Route 
+        path="/subscription" 
+        element={
+          <ProtectedRoute>
+            <SubscriptionLimits />
           </ProtectedRoute>
         }
       />

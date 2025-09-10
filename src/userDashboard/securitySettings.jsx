@@ -40,6 +40,12 @@ const SecuritySettings = () => {
       active: true,
     },
     {
+      name: "Pricing & Plans",
+      path: "/pricing-plans",
+      icon: <Sparkles size={25} strokeWidth={1.5} />,
+      active: false,
+    },
+    {
       name: "Subscription & Usage",
       path: "/subscription",
       icon: <Sparkles size={25} strokeWidth={1.5} />,
